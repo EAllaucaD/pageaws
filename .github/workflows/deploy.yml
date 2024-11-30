@@ -3,7 +3,7 @@ name: Deploy to EC2 with Dockerfile
 on:
   push:
     branches:
-      - deploy-with-dockerfile  # Esta rama activa el flujo de trabajo
+      - main
 
 jobs:
   build-and-push:
