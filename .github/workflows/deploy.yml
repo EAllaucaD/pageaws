@@ -3,7 +3,7 @@ name: Deploy to EC2 with Dockerfile
 on:
   push:
     branches:
-      - deploy-with-dockerfile
+      - main
 
 jobs:
   build-and-push:
@@ -22,10 +22,10 @@ jobs:
     - name: Build and push Docker image
       run: |
         # Build the Docker image and tag it as 'latest'
-        docker build -t ${{ secrets.DOCKER_USERNAME }}/my-app:latest .
+        docker build -t ${{ secrets.DOCKER_USERNAME }}/aws:latest .
 
         # Push the Docker image to Docker Hub
-        docker push ${{ secrets.DOCKER_USERNAME }}/my-app:latest
+        docker push ${{ secrets.DOCKER_USERNAME }}/aws:latest
 
   deploy:
     runs-on: ubuntu-latest
@@ -47,10 +47,10 @@ jobs:
           sudo docker image prune -f || true
 
           # Pull the latest Docker image from Docker Hub
-          sudo docker pull ${{ secrets.DOCKER_USERNAME }}/my-app:latest
+          sudo docker pull ${{ secrets.DOCKER_USERNAME }}/aws:latest
 
           # Run the new container
-          sudo docker run -d -p 80:80 --name web ${{ secrets.DOCKER_USERNAME }}/my-app:latest
+          sudo docker run -d -p 80:80 --name web ${{ secrets.DOCKER_USERNAME }}/aws:latest
 
           echo "¡Deploy App from Docker Hub!"
         EOF
