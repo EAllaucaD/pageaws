@@ -1,0 +1,56 @@
+name: Deploy to EC2 with Dockerfile
+
+on:
+  push:
+    branches:
+      - deploy-with-dockerfile
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Log in to Docker Hub
+      uses: docker/login-action@v2
+      with:
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
+
+    - name: Build and push Docker image
+      run: |
+        # Build the Docker image and tag it as 'latest'
+        docker build -t ${{ secrets.DOCKER_USERNAME }}/my-app:latest .
+
+        # Push the Docker image to Docker Hub
+        docker push ${{ secrets.DOCKER_USERNAME }}/my-app:latest
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build-and-push
+
+    steps:
+    - name: Set up SSH key
+      uses: webfactory/ssh-agent@v0.9.0
+      with:
+        ssh-private-key: ${{ secrets.EC2_SSH_KEY }}
+
+    - name: SSH into EC2 and deploy
+      run: |
+        ssh -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_PUBLIC_IP }} << 'EOF'
+          # Stop and remove existing container
+          sudo docker rm -f web || true
+
+          # Prune unused Docker images to free space
+          sudo docker image prune -f || true
+
+          # Pull the latest Docker image from Docker Hub
+          sudo docker pull ${{ secrets.DOCKER_USERNAME }}/my-app:latest
+
+          # Run the new container
+          sudo docker run -d -p 80:80 --name web ${{ secrets.DOCKER_USERNAME }}/my-app:latest
+
+          echo "¡Deploy App from Docker Hub!"
+        EOF
