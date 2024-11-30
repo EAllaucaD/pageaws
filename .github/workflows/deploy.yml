@@ -3,7 +3,7 @@ name: Deploy to EC2 with Dockerfile
 on:
   push:
     branches:
-      - main
+      - deploy-with-dockerfile  # Esta rama activa el flujo de trabajo
 
 jobs:
   build-and-push:
@@ -21,10 +21,10 @@ jobs:
 
     - name: Build and push Docker image
       run: |
-        # Build the Docker image and tag it as 'latest'
+        # Construir la imagen de Docker y etiquetarla como 'latest'
         docker build -t ${{ secrets.DOCKER_USERNAME }}/aws:latest .
 
-        # Push the Docker image to Docker Hub
+        # Empujar la imagen a Docker Hub
         docker push ${{ secrets.DOCKER_USERNAME }}/aws:latest
 
   deploy:
@@ -40,17 +40,19 @@ jobs:
     - name: SSH into EC2 and deploy
       run: |
         ssh -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_PUBLIC_IP }} << 'EOF'
-          # Stop and remove existing container
+          # Detener y remover el contenedor existente
           sudo docker rm -f web || true
 
-          # Prune unused Docker images to free space
+          # Limpiar imágenes de Docker no utilizadas
           sudo docker image prune -f || true
 
-          # Pull the latest Docker image from Docker Hub
+          # Descargar la última imagen desde Docker Hub
           sudo docker pull ${{ secrets.DOCKER_USERNAME }}/aws:latest
 
-          # Run the new container
-          sudo docker run -d -p 80:80 --name web ${{ secrets.DOCKER_USERNAME }}/aws:latest
+          # Ejecutar el contenedor actualizado
+          sudo docker run -d -p 80:80 --name web \
+            -v /home/ubuntu/pageaws/index.html:/usr/share/nginx/html/index.html \
+            ${{ secrets.DOCKER_USERNAME }}/aws:latest
 
           echo "¡Deploy App from Docker Hub!"
         EOF
