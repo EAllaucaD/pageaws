@@ -1,5 +1,8 @@
 # Nginx image
-FROM nginx:alpine
+FROM nginx:latest
 
 # Files
-COPY . /usr/share/nginx/html
+COPY ./html /usr/share/nginx/html
+
+# Port
+EXPOSE 80
