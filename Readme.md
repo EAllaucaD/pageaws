@@ -69,3 +69,5 @@ Make connections using ssh keys from your AWS account and place them in your git
 ## 🎨 Preview
 
 ![Captura de pantalla 2024-12-01 173801](https://github.com/user-attachments/assets/39d7d13f-5c92-4ad0-a9c7-ed888d370663)
+
+https://www.youtube.com/watch?v=mYLEv5S0XEM
